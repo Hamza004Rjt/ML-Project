@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assessment Result — Diabetes Risk</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-ring">
+      <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+    </div>
+    <h1>Assessment Complete</h1>
+    <p>Here are your AI-powered diabetes risk results and personalised health recommendations.</p>
+  </header>
+
+  <!-- ─── Result Hero Badge ─── -->
+  <div class="result-hero">
+    <div class="result-badge {{ result.recommendation.badge }}">
+      <div class="result-emoji">{{ result.recommendation.emoji }}</div>
+      <div class="result-class">{{ result.class_name }}</div>
+    </div>
+    <p class="result-summary">{{ result.recommendation.summary }}</p>
+  </div>
+
+  <!-- ─── Probability Bars ─── -->
+  <div class="prob-card">
+    <h3>Prediction Confidence</h3>
+    {% for prob in result.probabilities %}{% set i = loop.index0 %}
+    <div class="prob-row">
+      <span class="prob-label">{{ prob.label }}</span>
+      <div class="prob-track">
+        <div class="prob-fill prob-fill-{{ i }}" id="bar-{{ i }}" style="width: 0%"></div>
+      </div>
+      <span class="prob-pct">{{ prob.value }}%</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ─── Key Inputs Summary ─── -->
+  <div class="summary-grid">
+    <div class="summary-chip">
+      <div class="chip-label">BMI</div>
+      <div class="chip-value">{{ result.inputs.BMI }}</div>
+    </div>
+    <div class="summary-chip">
+      <div class="chip-label">Age Group</div>
+      <div class="chip-value">{{ result.inputs.Age }}</div>
+    </div>
+    <div class="summary-chip">
+      <div class="chip-label">Gen. Health</div>
+      <div class="chip-value">{{ result.inputs.GenHlth }} / 5</div>
+    </div>
+    <div class="summary-chip">
+      <div class="chip-label">High BP</div>
+      <div class="chip-value">{{ "Yes" if result.inputs.HighBP == "1" else "No" }}</div>
+    </div>
+    <div class="summary-chip">
+      <div class="chip-label">High Chol</div>
+      <div class="chip-value">{{ "Yes" if result.inputs.HighChol == "1" else "No" }}</div>
+    </div>
+    <div class="summary-chip">
+      <div class="chip-label">Smoker</div>
+      <div class="chip-value">{{ "Yes" if result.inputs.Smoker == "1" else "No" }}</div>
+    </div>
+    <div class="summary-chip">
+      <div class="chip-label">Active</div>
+      <div class="chip-value">{{ "Yes" if result.inputs.PhysActivity == "1" else "No" }}</div>
+    </div>
+  </div>
+
+  <!-- ─── Health Recommendations ─── -->
+  <div class="rec-card {{ result.recommendation.badge }}">
+    <h3>Health Recommendations</h3>
+    {% for tip in result.recommendation.tips %}
+    <div class="rec-tip">
+      <div class="rec-icon">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span>{{ tip }}</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ─── Disclaimer ─── -->
+  <div class="disclaimer">
+    <strong>⚠ Medical Disclaimer:</strong> This tool is for educational and informational purposes only. It is <em>not</em> a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider with any questions you may have regarding a medical condition.
+  </div>
+
+  <!-- ─── Retake Button ─── -->
+  <div class="retake-wrap">
+    <a href="/" class="btn-retake">
+      <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.61"/></svg>
+      Start New Assessment
+    </a>
+  </div>
+
+  <footer class="site-footer">Smart Healthcare Prediction System &nbsp;·&nbsp; AI-powered diabetes risk assessment</footer>
+</div>
+
+<script>
+  // Animate probability bars after page loads
+  window.addEventListener('load', () => {
+    const probs = {{ result.probabilities | tojson }};
+    probs.forEach((p, i) => {
+      setTimeout(() => {
+        const bar = document.getElementById('bar-' + i);
+        if (bar) bar.style.width = p.value + '%';
+      }, 300 + i * 120);
+    });
+  });
+</script>
+</body>
+</html>

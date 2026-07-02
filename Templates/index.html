@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diabetes Risk Assessment</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="logo-ring">
+      <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+    </div>
+    <h1>Diabetes Risk Assessment</h1>
+    <p>Enter your clinical data below to receive an AI-powered diabetes risk prediction and personalised health guidance.</p>
+  </header>
+
+  {% if error %}
+  <div class="error-banner">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    {{ error }}
+  </div>
+  {% endif %}
+
+  <!-- Progress Steps -->
+  <div class="progress-wrap">
+    <div class="progress-steps">
+      <div class="step-item active" id="prog-1">
+        <div class="step-dot active">1</div>
+        <div class="step-label">Personal</div>
+      </div>
+      <div class="step-connector" id="conn-1"></div>
+      <div class="step-item" id="prog-2">
+        <div class="step-dot">2</div>
+        <div class="step-label">Medical</div>
+      </div>
+      <div class="step-connector" id="conn-2"></div>
+      <div class="step-item" id="prog-3">
+        <div class="step-dot">3</div>
+        <div class="step-label">Lifestyle</div>
+      </div>
+      <div class="step-connector" id="conn-3"></div>
+      <div class="step-item" id="prog-4">
+        <div class="step-dot">4</div>
+        <div class="step-label">Health</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Card -->
+  <div class="form-card">
+    <form method="POST" action="/predict" id="riskForm">
+
+      <!-- ═══════════════════════════════════
+           STEP 1 — Personal Information
+      ════════════════════════════════════ -->
+      <div class="form-step active" id="step-1">
+        <div class="step-heading">
+          <div class="step-tag">Step 1 of 4</div>
+          <h2>Personal Information</h2>
+          <p>Basic demographic details used to calibrate the prediction model.</p>
+        </div>
+
+        <div class="fields-grid">
+
+          <!-- Sex -->
+          <div class="field">
+            <label>Biological Sex</label>
+            <div class="toggle-group">
+              <button type="button" class="toggle-btn" onclick="setBinary('Sex', 0, this, 'female')">♀ Female</button>
+              <button type="button" class="toggle-btn" onclick="setBinary('Sex', 1, this, 'male')">♂ Male</button>
+            </div>
+            <input type="hidden" name="Sex" id="Sex" value="0" required />
+          </div>
+
+          <!-- Age -->
+          <div class="field">
+            <label>Age Group <span class="hint">(select your range)</span></label>
+            <select name="Age" required>
+              <option value="" disabled selected>Select age range</option>
+              <option value="1">18 – 24</option>
+              <option value="2">25 – 29</option>
+              <option value="3">30 – 34</option>
+              <option value="4">35 – 39</option>
+              <option value="5">40 – 44</option>
+              <option value="6">45 – 49</option>
+              <option value="7">50 – 54</option>
+              <option value="8">55 – 59</option>
+              <option value="9">60 – 64</option>
+              <option value="10">65 – 69</option>
+              <option value="11">70 – 74</option>
+              <option value="12">75 – 79</option>
+              <option value="13">80 or older</option>
+            </select>
+          </div>
+
+          <!-- Education -->
+          <div class="field">
+            <label>Education Level</label>
+            <select name="Education" required>
+              <option value="" disabled selected>Select education</option>
+              <option value="1">Never attended school</option>
+              <option value="2">Elementary (Grades 1–8)</option>
+              <option value="3">Some high school</option>
+              <option value="4">High school graduate</option>
+              <option value="5">Some college or technical</option>
+              <option value="6">College graduate</option>
+            </select>
+          </div>
+
+          <!-- Income -->
+          <div class="field">
+            <label>Annual Household Income</label>
+            <select name="Income" required>
+              <option value="" disabled selected>Select income range</option>
+              <option value="1">Less than $10,000</option>
+              <option value="2">$10,000 – $14,999</option>
+              <option value="3">$15,000 – $19,999</option>
+              <option value="4">$20,000 – $24,999</option>
+              <option value="5">$25,000 – $34,999</option>
+              <option value="6">$35,000 – $49,999</option>
+              <option value="7">$50,000 – $74,999</option>
+              <option value="8">$75,000 or more</option>
+            </select>
+          </div>
+
+        </div><!-- /fields-grid -->
+      </div><!-- /step-1 -->
+
+
+      <!-- ═══════════════════════════════════
+           STEP 2 — Medical History
+      ════════════════════════════════════ -->
+      <div class="form-step" id="step-2">
+        <div class="step-heading">
+          <div class="step-tag">Step 2 of 4</div>
+          <h2>Medical History</h2>
+          <p>Diagnosed conditions and clinical screening results.</p>
+        </div>
+
+        <div class="fields-grid">
+
+          <div class="field">
+            <label>High Blood Pressure</label>
+            <div class="toggle-group">
+              <button type="button" class="toggle-btn" onclick="setBinary('HighBP', 1, this, 'yes')">Yes</button>
+              <button type="button" class="toggle-btn" onclick="setBinary('HighBP', 0, this, 'no')">No</button>
+            </div>
+            <input type="hidden" name="HighBP" id="HighBP" value="0" />
+          </div>
+
+          <div class="field">
+            <label>High Cholesterol</label>
+            <div class="toggle-group">
+              <button type="button" class="toggle-btn" onclick="setBinary('HighChol', 1, this, 'yes')">Yes</button>
+              <button type="button" class="toggle-btn" onclick="setBinary('HighChol', 0, this, 'no')">No</button>
+            </div>
+            <input type="hidden" name="HighChol" id="HighChol" value="0" />
+          </div>
+
+          <div class="field">
+            <label>Cholesterol Check <span class="hint">(in past 5 years)</span></label>
+            <div class="toggle-group">
+              <button type="button" class="toggle-btn" onclick="setBinary('CholCheck', 1, this, 'yes')">Yes</button>
+              <button type="button" class="toggle-btn" onclick="setBinary('CholCheck', 0, this, 'no')">No</button>
+            </div>
+            <input type="hidden" name="CholCheck" id="CholCheck" value="0" />
+          </div>
+
+          <div class="field">
+            <label>Ever Had a Stroke</label>
+            <div class="toggle-group">
+              <button type="button" class="toggle-btn" onclick="setBinary('Stroke', 1, this, 'yes')">Yes</button>
+              <button type="button" class="toggle-btn" onclick="setBinary('Stroke', 0, this, 'no')">No</button>
+            </div>
+            <input type="hidden" name="Stroke" id="Stroke" value="0" />
+          </div>
+
+          <div class="field" style="grid-column: 1 / -1;">
+            <label>Coronary Heart Disease or Heart Attack</label>
+            <div class="toggle-group" style="max-width: 260px;">
+              <button type="button" class="toggle-btn" onclick="setBinary('HeartDiseaseorAttack', 1, this, 'yes')">Yes</button>
+              <button type="button" class="toggle-btn" onclick="setBinary('HeartDiseaseorAttack', 0, this, 'no')">No</button>
+            </div>
+            <input type="hidden" name="HeartDiseaseorAttack" id="HeartDiseaseorAttack" value="0" />
+          </div>
+
+        </div>
+      </div><!-- /step-2 -->
+
+
+      <!-- ═══════════════════════════════════
+           STEP 3 — Lifestyle
+      ════════════════════════════════════ -->
+      <div class="form-step" id="step-3">
+        <div class="step-heading">
+          <div class="step-tag">Step 3 of 4</div>
+          <h2>Lifestyle & Habits</h2>
+          <p>Daily habits and healthcare access — key lifestyle risk factors.</p>
+        </div>
+
+        <div class="fields-grid">
+
+          <div class="field">
+            <label>Smoker <span class="hint">(100+ cigarettes lifetime)</span></label>
+            <div class="toggle-group">
+              <button type="button" class="toggle-btn" onclick="setBinary('Smoker', 1, this, 'yes')">Yes</button>
+              <button type="button" class="toggle-btn" onclick="setBinary('Smoker', 0, this, 'no')">No</button>
+            </div>
+            <input type="hidden" name="Smoker" id="Smoker" value="0" />
+          </div>
+
+          <div class="field">
+            <label>Heavy Alcohol Consumption</label>
+            <div class="toggle-group">
+              <button type="button" class="toggle-btn" onclick="setBinary('HvyAlcoholConsump', 1, this, 'yes')">Yes</button>
+              <button type="button" class="toggle-btn" onclick="setBinary('HvyAlcoholConsump', 0, this, 'no')">No</button>
+            </div>
+            <input type="hidden" name="HvyAlcoholConsump" id="HvyAlcoholConsump" value="0" />
+          </div>
+
+          <div class="field">
+            <label>Physical Activity <span class="hint">(past 30 days)</span></label>
+            <div class="toggle-group">
+              <button type="button" class="toggle-btn" onclick="setBinary('PhysActivity', 1, this, 'yes')">Yes</button>
+              <button type="button" class="toggle-btn" onclick="setBinary('PhysActivity', 0, this, 'no')">No</button>
+            </div>
+            <input type="hidden" name="PhysActivity" id="PhysActivity" value="0" />
+          </div>
+
+          <div class="field">
+            <label>Eats Fruit Daily</label>
+            <div class="toggle-group">
+              <button type="button" class="toggle-btn" onclick="setBinary('Fruits', 1, this, 'yes')">Yes</button>
+              <button type="button" class="toggle-btn" onclick="setBinary('Fruits', 0, this, 'no')">No</button>
+            </div>
+            <input type="hidden" name="Fruits" id="Fruits" value="0" />
+          </div>
+
+          <div class="field">
+            <label>Eats Vegetables Daily</label>
+            <div class="toggle-group">
+              <button type="button" class="toggle-btn" onclick="setBinary('Veggies', 1, this, 'yes')">Yes</button>
+              <button type="button" class="toggle-btn" onclick="setBinary('Veggies', 0, this, 'no')">No</button>
+            </div>
+            <input type="hidden" name="Veggies" id="Veggies" value="0" />
+          </div>
+
+          <div class="field">
+            <label>Has Healthcare Coverage</label>
+            <div class="toggle-group">
+              <button type="button" class="toggle-btn" onclick="setBinary('AnyHealthcare', 1, this, 'yes')">Yes</button>
+              <button type="button" class="toggle-btn" onclick="setBinary('AnyHealthcare', 0, this, 'no')">No</button>
+            </div>
+            <input type="hidden" name="AnyHealthcare" id="AnyHealthcare" value="0" />
+          </div>
+
+          <div class="field" style="grid-column: 1 / -1;">
+            <label>Could Not Afford Doctor <span class="hint">(past 12 months)</span></label>
+            <div class="toggle-group" style="max-width: 260px;">
+              <button type="button" class="toggle-btn" onclick="setBinary('NoDocbcCost', 1, this, 'yes')">Yes</button>
+              <button type="button" class="toggle-btn" onclick="setBinary('NoDocbcCost', 0, this, 'no')">No</button>
+            </div>
+            <input type="hidden" name="NoDocbcCost" id="NoDocbcCost" value="0" />
+          </div>
+
+        </div>
+      </div><!-- /step-3 -->
+
+
+      <!-- ═══════════════════════════════════
+           STEP 4 — Current Health Status
+      ════════════════════════════════════ -->
+      <div class="form-step" id="step-4">
+        <div class="step-heading">
+          <div class="step-tag">Step 4 of 4</div>
+          <h2>Current Health Status</h2>
+          <p>Your recent physical measurements and self-reported health metrics.</p>
+        </div>
+
+        <div class="fields-grid">
+
+          <!-- BMI -->
+          <div class="field">
+            <label>Body Mass Index (BMI) <span class="hint">(weight ÷ height²)</span></label>
+            <input type="number" name="BMI" min="10" max="98" step="0.1" placeholder="e.g. 26.5" required />
+          </div>
+
+          <!-- General Health -->
+          <div class="field">
+            <label>General Health <span class="hint">(self-rating)</span></label>
+            <select name="GenHlth" required>
+              <option value="" disabled selected>How is your general health?</option>
+              <option value="1">1 — Excellent</option>
+              <option value="2">2 — Very Good</option>
+              <option value="3">3 — Good</option>
+              <option value="4">4 — Fair</option>
+              <option value="5">5 — Poor</option>
+            </select>
+          </div>
+
+          <!-- Mental Health -->
+          <div class="field">
+            <label>Poor Mental Health Days <span class="hint">(last 30 days, 0–30)</span></label>
+            <input type="number" name="MentHlth" min="0" max="30" step="1" placeholder="e.g. 4" required />
+          </div>
+
+          <!-- Physical Health -->
+          <div class="field">
+            <label>Poor Physical Health Days <span class="hint">(last 30 days, 0–30)</span></label>
+            <input type="number" name="PhysHlth" min="0" max="30" step="1" placeholder="e.g. 3" required />
+          </div>
+
+          <!-- Difficulty Walking -->
+          <div class="field" style="grid-column: 1 / -1;">
+            <label>Difficulty Walking or Climbing Stairs</label>
+            <div class="toggle-group" style="max-width: 260px;">
+              <button type="button" class="toggle-btn" onclick="setBinary('DiffWalk', 1, this, 'yes')">Yes</button>
+              <button type="button" class="toggle-btn" onclick="setBinary('DiffWalk', 0, this, 'no')">No</button>
+            </div>
+            <input type="hidden" name="DiffWalk" id="DiffWalk" value="0" />
+          </div>
+
+        </div>
+      </div><!-- /step-4 -->
+
+
+      <!-- ─── Navigation ─── -->
+      <div class="form-nav">
+        <button type="button" class="btn btn-ghost" id="prevBtn" onclick="changeStep(-1)" style="display:none;">
+          ← Back
+        </button>
+        <span class="step-counter" id="stepCounter">Step 1 of 4</span>
+        <button type="button" class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">
+          Continue →
+        </button>
+        <button type="submit" class="btn btn-submit" id="submitBtn" style="display:none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Analyse Risk
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <footer class="site-footer">Smart Healthcare Prediction System &nbsp;·&nbsp; AI-powered diabetes risk assessment</footer>
+</div>
+
+<script>
+  let currentStep = 1;
+  const totalSteps = 4;
+
+  function changeStep(dir) {
+    // Basic validation before advancing
+    if (dir === 1 && !validateStep(currentStep)) return;
+
+    const oldStep = currentStep;
+    currentStep += dir;
+
+    document.getElementById('step-' + oldStep).classList.remove('active');
+    document.getElementById('step-' + currentStep).classList.add('active');
+
+    updateProgress();
+    updateNav();
+  }
+
+  function validateStep(step) {
+    const el = document.getElementById('step-' + step);
+    const inputs = el.querySelectorAll('input[required], select[required]');
+    for (const inp of inputs) {
+      if (!inp.value && inp.type !== 'hidden') {
+        inp.focus();
+        inp.style.borderColor = 'var(--rose)';
+        setTimeout(() => inp.style.borderColor = '', 1800);
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function updateProgress() {
+    for (let i = 1; i <= totalSteps; i++) {
+      const progItem = document.getElementById('prog-' + i);
+      const dot      = progItem.querySelector('.step-dot');
+      progItem.classList.remove('active', 'done');
+      dot.classList.remove('active', 'done');
+
+      if (i < currentStep) {
+        progItem.classList.add('done');
+        dot.classList.add('done');
+        dot.textContent = '✓';
+      } else if (i === currentStep) {
+        progItem.classList.add('active');
+        dot.classList.add('active');
+        dot.textContent = i;
+      } else {
+        dot.textContent = i;
+      }
+
+      if (i < totalSteps) {
+        const conn = document.getElementById('conn-' + i);
+        conn.classList.toggle('done', i < currentStep);
+      }
+    }
+  }
+
+  function updateNav() {
+    const prevBtn   = document.getElementById('prevBtn');
+    const nextBtn   = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const counter   = document.getElementById('stepCounter');
+
+    counter.textContent = 'Step ' + currentStep + ' of ' + totalSteps;
+
+    prevBtn.style.display   = currentStep > 1 ? 'inline-flex' : 'none';
+    nextBtn.style.display   = currentStep < totalSteps ? 'inline-flex' : 'none';
+    submitBtn.style.display = currentStep === totalSteps ? 'inline-flex' : 'none';
+  }
+
+  function setBinary(fieldName, value, btn, type) {
+    document.getElementById(fieldName).value = value;
+
+    // Reset siblings
+    const siblings = btn.parentElement.querySelectorAll('.toggle-btn');
+    siblings.forEach(b => b.classList.remove('selected-yes', 'selected-no'));
+
+    btn.classList.add(type === 'yes' || type === 'male' || type === 'female'
+      ? (value === 1 || type === 'male' ? 'selected-yes' : 'selected-no')
+      : 'selected-no'
+    );
+
+    // For Sex field: female = 0 (selected-no), male = 1 (selected-yes)
+    if (fieldName === 'Sex') {
+      siblings.forEach(b => b.classList.remove('selected-yes', 'selected-no'));
+      btn.classList.add(value === 1 ? 'selected-yes' : 'selected-no');
+    } else {
+      siblings.forEach(b => b.classList.remove('selected-yes', 'selected-no'));
+      btn.classList.add(value === 1 ? 'selected-yes' : 'selected-no');
+    }
+  }
+</script>
+</body>
+</html>
